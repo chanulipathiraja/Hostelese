@@ -9,6 +9,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      hostelId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'hostels',
+          key: 'id'
+        }
+      },
       facilityType: {
         type: Sequelize.STRING
       },

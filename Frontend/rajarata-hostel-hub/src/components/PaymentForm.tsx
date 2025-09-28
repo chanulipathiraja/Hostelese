@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ export function PaymentForm() {
     paymentDescription: "",
     paymentDate: "",
   });
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -42,6 +43,7 @@ export function PaymentForm() {
 
       if (response) {
         alert("Payment submitted successfully!");
+        await fetchPayment(); // Refresh payment details after submit
         navigate("/student-dashboard");
       } else {
         alert(response.data.message || "Payment submission failed!");
@@ -49,8 +51,7 @@ export function PaymentForm() {
     } catch (err: any) {
       console.error(err);
       alert(
-        err.response?.data?.message ||
-          "Server error while submitting payment"
+        err.response?.data?.message || "Server error while submitting payment"
       );
     } finally {
       setIsSubmitting(false);
@@ -109,6 +110,9 @@ export function PaymentForm() {
             {isSubmitting ? "Submitting..." : "Submit Payment"}
           </Button>
         </form>
+
+        {/* Show payment details */}
+        
       </CardContent>
     </Card>
   );

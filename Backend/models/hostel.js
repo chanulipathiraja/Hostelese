@@ -11,6 +11,7 @@ const Hostel = sequelize.define('Hostel', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  
   register_count: {
     type: DataTypes.INTEGER,
     allowNull: false,

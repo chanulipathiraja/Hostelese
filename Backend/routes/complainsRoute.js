@@ -3,7 +3,9 @@ import {
   getComplains,
   postComplains,
   deleteComplains,
-  updateComplains
+  updateComplains,
+  getComplainsById,
+ 
 
 } from '../controllers/complainsController.js';
 //import { authenticateToken } from '../middleware/authMiddleware.js';
@@ -12,6 +14,7 @@ import {
 const router = express.Router();
 
 router.get('/', getComplains);
+router.get('/:id', getComplainsById);
 router.post('/register', postComplains);
 router.delete('/refresh', deleteComplains);
 router.post('/refresh', updateComplains);

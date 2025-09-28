@@ -18,9 +18,10 @@ export function RegisterForm() {
   const navigate = useNavigate(); 
   // Student state
   const [student, setStudent] = useState({
+    hostelId: "",
+    emergencyId: "",
     studentName: "",
     userName: "",
-    hostelName: "",
     password: "",
     confirmPassword: "",
     email: "",
@@ -98,6 +99,29 @@ export function RegisterForm() {
               onSubmit={handleStudentSubmit}
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
+
+              <div>
+                <Label>Hostel Id</Label>
+                <Input
+                  value={student.hostelId}
+                  onChange={(e) =>
+                    setStudent({ ...student, hostelId: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <Label>Emergency Id</Label>
+                <Input
+                  value={student.emergencyId}
+                  onChange={(e) =>
+                    setStudent({ ...student, emergencyId: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              
               <div>
                 <Label>Student Name</Label>
                 <Input
@@ -118,16 +142,7 @@ export function RegisterForm() {
                   required
                 />
               </div>
-              <div>
-                <Label>Hostel Name</Label>
-                <Input
-                  value={student.hostelName}
-                  onChange={(e) =>
-                    setStudent({ ...student, hostelName: e.target.value })
-                  }
-                  required
-                />
-              </div>
+              
               <div>
                 <Label>Password</Label>
                 <Input

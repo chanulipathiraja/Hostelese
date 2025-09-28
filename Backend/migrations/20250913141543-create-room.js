@@ -9,8 +9,13 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      hostelid: {
-        type: Sequelize.INTEGER
+      hostelId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'hostels',
+          key: 'id'
+        }
       },
       roomNo: {
         type: Sequelize.INTEGER

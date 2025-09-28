@@ -7,12 +7,18 @@ const Facility = sequelize.define('Facility', {
     primaryKey: true,
     autoIncrement: true,
   },
-  
+  hostelId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'hostels',
+      key: 'id'
+    }
+  },
   facilityType: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  
   createdAt: {
     allowNull: false,
     type: DataTypes.DATE,

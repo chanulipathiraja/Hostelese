@@ -7,6 +7,22 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true,
   },
+  hostelId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'hostels',
+      key: 'id'
+    }
+  },
+  emergencyId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'emergencies',
+      key: 'id'
+    }
+  },
   studentName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -15,11 +31,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  hostelName: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  
   password: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -54,7 +65,6 @@ const User = sequelize.define('User', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  
   address: {
     type: DataTypes.STRING,
     allowNull: false,

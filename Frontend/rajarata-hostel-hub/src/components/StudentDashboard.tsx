@@ -1,84 +1,126 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import {handleLogout} from "@/components/LoginForm";
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
-
 import { PaymentForm } from "@/components/PaymentForm";
-import { 
-  HomeIcon, 
-  CreditCardIcon, 
-  FileTextIcon, 
+
+import {
+  HomeIcon,
   PhoneIcon,
   UserIcon,
-  MapPinIcon,
-  CalendarIcon,
-  DollarSignIcon
+  DollarSignIcon,
 } from "lucide-react";
 
 interface StudentDashboardProps {
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 const mockHostelData = {
-  name: "Nelum Hostel",
-  facilityType: "AC Rooms with Attached Bathroom",
+  name: "Pandula Hostel",
+  facilityType: "Attached Bathroom",
   totalRooms: 120,
   registeredStudents: 240,
   onLeave: 15,
-  sickStudents: 3
+  sickStudents: 3,
 };
 
-const mockPayments = [
-  { id: 1, reference: "PAY001", date: "2024-01-15", amount: 15000, description: "Monthly Hostel Fee - January" },
-  { id: 2, reference: "PAY002", date: "2024-02-15", amount: 15000, description: "Monthly Hostel Fee - February" },
-  { id: 3, reference: "PAY003", date: "2024-03-15", amount: 15000, description: "Monthly Hostel Fee - March" }
-];
-export function StudentDashboard() {
+export function StudentDashboard({ onLogout }: StudentDashboardProps) {
   const [studentData, setStudentData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadingStudent, setLoadingStudent] = useState(true);
+  const [errorStudent, setErrorStudent] = useState("");
 
-  
+  // Complaint states
+  const [complaintText, setComplaintText] = useState("");
+  const [complaintType, setComplaintType] = useState("");
+  const [complaintDate, setComplaintDate] = useState("");
+  const [loadingComplaint, setLoadingComplaint] = useState(false);
+  const [complaintSuccess, setComplaintSuccess] = useState(false);
+  const [complaintError, setComplaintError] = useState("");
 
+  // Edit states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>({});
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-  // Optional: clear any auth/session data
-  localStorage.removeItem("userToken");
-  sessionStorage.clear();
+    localStorage.removeItem("userToken");
+    sessionStorage.clear();
+    navigate("/login", { replace: true });
+    if (onLogout) onLogout();
+  };
 
-  // Redirect to login, replacing history
-  navigate("/login", { replace: true });
-};
-
+  // Fetch student data
   useEffect(() => {
+    const userId = localStorage.getItem("userId");
     axios
-      .get("http://localhost:3001/api/user/1")
+      .get("http://localhost:3001/api/user/" + userId)
       .then((response) => {
+        console.log(response.data);
         setStudentData(response.data);
-        setLoading(false);
+        setEditData(response.data); // set edit data initially
+        setLoadingStudent(false);
       })
       .catch((err) => {
         console.error(err);
-        setError("Failed to fetch student data.");
-        setLoading(false);
+        setErrorStudent("Failed to fetch student data.");
+        setLoadingStudent(false);
       });
   }, []);
 
-  if (loading) {
+  // Submit complaint
+  const handleComplaintSubmit = async () => {
+    setLoadingComplaint(true);
+    setComplaintSuccess(false);
+    setComplaintError("");
+
+    try {
+      await axios.post("http://localhost:3001/api/complains/register", {
+        userID: studentData.id,
+        complainAbout: complaintText,
+        complainType: complaintType,
+        complainDate: complaintDate,
+      });
+
+      setComplaintSuccess(true);
+      setComplaintText("");
+      setComplaintType("");
+      setComplaintDate("");
+    } catch (err: any) {
+      setComplaintError(err.response?.data?.message || "Failed to submit complaint");
+    } finally {
+      setLoadingComplaint(false);
+    }
+  };
+
+  // Update student data
+  const handleUpdateSubmit = async () => {
+    setLoadingUpdate(true);
+    setUpdateMessage("");
+    try {
+      const response = await axios.put("http://localhost:3001/api/user/refresh", editData);
+      setStudentData(response.data); // refresh with new data
+      setIsEditing(false);
+      setUpdateMessage("Information updated successfully!");
+    } catch (err: any) {
+      setUpdateMessage(err.response?.data?.message || "Failed to update information.");
+    } finally {
+      setLoadingUpdate(false);
+    }
+  };
+
+  if (loadingStudent) {
     return <div className="p-8 text-center text-lg">Loading student data...</div>;
   }
 
-  if (error || !studentData) {
+  if (errorStudent || !studentData) {
     return (
       <div className="p-8 text-center text-red-600 font-semibold">
-        {error || "Student data not available"}
+        {errorStudent || "Student data not available"}
       </div>
     );
   }
@@ -91,16 +133,24 @@ const navigate = useNavigate();
           <div className="flex items-center gap-3">
             <HomeIcon className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-xl font-bold text-primary">Rajarata University</h1>
+              <h1 className="text-xl font-bold text-primary">
+                Rajarata University
+              </h1>
               <p className="text-sm text-muted-foreground">Student Portal</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="font-medium">{studentData.studentName}</p>
-              <p className="text-sm text-muted-foreground">{studentData.indexNumber}</p>
+              <p className="text-sm text-muted-foreground">
+                {studentData.indexNumber}
+              </p>
             </div>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              style={{ backgroundColor: "#ed6e60ff" }}
+            >
               Logout
             </Button>
           </div>
@@ -110,59 +160,148 @@ const navigate = useNavigate();
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Welcome Section */}
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-primary">Welcome back, {studentData.studentName}!</h2>
-          <p className="text-muted-foreground">Manage your hostel information and payments</p>
+          <h2 className="text-3xl font-bold text-primary">
+            Welcome back, {studentData.studentName}!
+          </h2>
+          <p className="text-muted-foreground">
+            Manage your hostel information and payments
+          </p>
         </div>
 
-        {/* Student Info Card */}
+        {/* Student Info */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex justify-between items-center">
             <CardTitle className="flex items-center gap-2">
               <UserIcon className="h-5 w-5" />
               Personal Information
             </CardTitle>
+            {!isEditing && (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                Edit
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div>
-                <Label>Student Name</Label>
+              <Label>Student Name</Label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  value={editData.studentName}
+                  onChange={(e) =>
+                    setEditData({ ...editData, studentName: e.target.value })
+                  }
+                />
+              ) : (
                 <p className="font-medium">{studentData.studentName}</p>
-              </div>
-              <div>
-                <Label>Index Number</Label>
-                <p className="font-medium">{studentData.indexNumber}</p>
-              </div>
-              <div>
-                <Label>Register Number</Label>
-                <p className="font-medium">{studentData.registerNumber}</p>
-              </div>
-              <div>
-                <Label>Email</Label>
+              )}
+
+              <Label>Index Number</Label>
+              <p className="font-medium">{studentData.indexNumber}</p>
+
+              <Label>Register Number</Label>
+              <p className="font-medium">{studentData.registerNumber}</p>
+
+              <Label>Email</Label>
+              {isEditing ? (
+                <input
+                  type="email"
+                  className="w-full p-2 border rounded"
+                  value={editData.email}
+                  onChange={(e) =>
+                    setEditData({ ...editData, email: e.target.value })
+                  }
+                />
+              ) : (
                 <p className="font-medium">{studentData.email}</p>
-              </div>
+              )}
             </div>
             <div className="space-y-4">
-              <div>
-                <Label>Phone Number</Label>
+              <Label>Phone Number</Label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  value={editData.phoneNumber}
+                  onChange={(e) =>
+                    setEditData({ ...editData, phoneNumber: e.target.value })
+                  }
+                />
+              ) : (
                 <p className="font-medium">{studentData.phoneNumber}</p>
-              </div>
-              <div>
-                <Label>Parent Name</Label>
+              )}
+
+              <Label>Parent Name</Label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  value={editData.parentName}
+                  onChange={(e) =>
+                    setEditData({ ...editData, parentName: e.target.value })
+                  }
+                />
+              ) : (
                 <p className="font-medium">{studentData.parentName}</p>
-              </div>
-              <div>
-                <Label>Parent Phone</Label>
+              )}
+
+              <Label>Parent Phone</Label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  value={editData.parentPhonenumber}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      parentPhonenumber: e.target.value,
+                    })
+                  }
+                />
+              ) : (
                 <p className="font-medium">{studentData.parentPhonenumber}</p>
-              </div>
-              <div>
-                <Label>Address</Label>
+              )}
+
+              <Label>Address</Label>
+              {isEditing ? (
+                <textarea
+                  className="w-full p-2 border rounded"
+                  rows={2}
+                  value={editData.address}
+                  onChange={(e) =>
+                    setEditData({ ...editData, address: e.target.value })
+                  }
+                />
+              ) : (
                 <p className="font-medium">{studentData.address}</p>
-              </div>
+              )}
             </div>
           </CardContent>
+          {isEditing && (
+            <div className="flex gap-3 p-4">
+              <Button onClick={handleUpdateSubmit} disabled={loadingUpdate}>
+                {loadingUpdate ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditData(studentData);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+          {updateMessage && (
+            <p className="text-center text-sm text-green-600 p-2">
+              {updateMessage}
+            </p>
+          )}
         </Card>
 
-        {/* Hostel Information */}
+        {/* Hostel Info */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -173,76 +312,112 @@ const navigate = useNavigate();
           <CardContent>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="text-center p-4 bg-primary/5 rounded-lg">
-                <h3 className="font-semibold text-primary text-lg">{mockHostelData.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">Your Hostel</p>
+                <h3 className="font-semibold text-primary text-lg">
+                  Hostel
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">{studentData.Hostel.hostelName}</p>
               </div>
               <div className="text-center p-4 bg-secondary/10 rounded-lg">
-                <h3 className="font-semibold text-lg">Room {studentData.roomNumber}</h3>
-                <p className="text-sm text-muted-foreground">Floor {studentData.floorNumber}</p>
+                <h3 className="font-semibold text-lg">
+                  Room Number {studentData.roomNumber}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Floor Number {studentData.floorNumber}
+                </p>
               </div>
-              <div className="text-center p-4 bg-success/10 rounded-lg">
-                <h3 className="font-semibold text-lg">{mockHostelData.registeredStudents}</h3>
-                <p className="text-sm text-muted-foreground">Total Students</p>
-              </div>
-              <div className="text-center p-4 bg-warning/10 rounded-lg">
-                <h3 className="font-semibold text-lg">{mockHostelData.facilityType}</h3>
-                <p className="text-sm text-muted-foreground">Facility Type</p>
-              </div>
+              
+              
             </div>
           </CardContent>
         </Card>
 
         {/* Payment Section */}
         <Card>
-          <CardContent className="p-0">
-            <Tabs defaultValue="history" className="w-full">
-              <div className="border-b">
-                <TabsList className="grid w-full grid-cols-2 h-auto rounded-none bg-transparent">
-                  <TabsTrigger value="history" className="py-4">
-                    <CreditCardIcon className="h-4 w-4 mr-2" />
-                    Payment History
-                  </TabsTrigger>
-                  <TabsTrigger value="make-payment" className="py-4">
-                    <DollarSignIcon className="h-4 w-4 mr-2" />
-                    Make Payment
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="history" className="p-6 space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Recent Payments</h3>
-                  <p className="text-sm text-muted-foreground mb-4">View your payment history</p>
-                </div>
-                <div className="space-y-4">
-                  {mockPayments.map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 bg-success/10 rounded-full">
-                          <CreditCardIcon className="h-4 w-4 text-success" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{payment.description}</p>
-                          <p className="text-sm text-muted-foreground">Ref: {payment.reference}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">LKR {payment.amount.toLocaleString()}</p>
-                        <p className="text-sm text-muted-foreground">{payment.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="make-payment" className="p-6">
-                <PaymentForm />
-              </TabsContent>
-            </Tabs>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSignIcon className="h-5 w-5" />
+              Make Payment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <PaymentForm />
           </CardContent>
         </Card>
 
-        {/* Emergency Contacts */}
+        {/* Complaint Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Make Complaint
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <h3 className="text-lg font-semibold mb-2">Submit a Complaint</h3>
+
+            {/* Complaint Type */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-muted-foreground">
+                Complaint Type
+              </label>
+              <select
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-primary/30"
+                value={complaintType}
+                onChange={(e) => setComplaintType(e.target.value)}
+              >
+                <option value="">-- Select Type --</option>
+                <option value="private">Private</option>
+                <option value="common">Common</option>
+              </select>
+            </div>
+
+            {/* Complaint Date */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-muted-foreground">
+                Complaint Date
+              </label>
+              <input
+                type="date"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-primary/30"
+                value={complaintDate}
+                onChange={(e) => setComplaintDate(e.target.value)}
+              />
+            </div>
+
+            {/* Complaint Text */}
+            <textarea
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-primary/30"
+              rows={4}
+              placeholder="Describe your issue..."
+              value={complaintText}
+              onChange={(e) => setComplaintText(e.target.value)}
+            />
+
+            {/* Submit */}
+            <Button
+              onClick={handleComplaintSubmit}
+              disabled={
+                loadingComplaint ||
+                !complaintText.trim() ||
+                !complaintType ||
+                !complaintDate
+              }
+            >
+              {loadingComplaint ? "Submitting..." : "Submit Complaint"}
+            </Button>
+
+            {/* Feedback */}
+            {complaintSuccess && (
+              <p className="text-green-600 text-sm mt-2">
+                Complaint submitted successfully!
+              </p>
+            )}
+            {complaintError && (
+              <p className="text-red-600 text-sm mt-2">{complaintError}</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Emergency */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -252,20 +427,31 @@ const navigate = useNavigate();
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center p-4 border rounded-lg">
-                <h3 className="font-semibold">Sub Warden</h3>
-                <p className="text-sm text-muted-foreground">Dr. Nimal Silva</p>
-                <p className="font-medium mt-2">077-2345678</p>
+              <div
+                className="text-center p-4 border rounded-lg"
+                style={{ backgroundColor: "#fcdad6ff" }}
+              >
+                <h3 className="font-semibold">Sub Warden  </h3>
+                <p className="text-sm text-muted-foreground">{studentData.Emergency.subwardenName}</p>
+                <p className="font-medium mt-2">{studentData.Emergency.subwardenContactnumber}</p>
               </div>
-              <div className="text-center p-4 border rounded-lg">
+              <div
+                className="text-center p-4 border rounded-lg"
+                style={{ backgroundColor: "#fcdad6ff" }}
+              >
                 <h3 className="font-semibold">Medical Center</h3>
-                <p className="text-sm text-muted-foreground">University Medical Center</p>
-                <p className="font-medium mt-2">025-2266500</p>
+                <p className="text-sm text-muted-foreground">
+                  {studentData.Emergency.medicalcenterName}
+                </p>
+                <p className="font-medium mt-2">{studentData.Emergency.subwardenContactnumber}</p>
               </div>
-              <div className="text-center p-4 border rounded-lg">
+              <div
+                className="text-center p-4 border rounded-lg"
+                style={{ backgroundColor: "#fcdad6ff" }}
+              >
                 <h3 className="font-semibold">Ambulance</h3>
-                <p className="text-sm text-muted-foreground">Emergency Services</p>
-                <p className="font-medium mt-2">110</p>
+                <p className="text-sm text-muted-foreground">{studentData.Emergency.ambulanceName}</p>
+                <p className="font-medium mt-2">{studentData.Emergency.ambulanceContactnumber}</p>
               </div>
             </div>
           </CardContent>

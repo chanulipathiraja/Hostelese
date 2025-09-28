@@ -1,6 +1,6 @@
 import express from 'express';
 
-import Room from '../models/room.js';
+import {Room} from '../models/index.js';
 
 export const getRoom = async(req,res)=>{
    const room = await Room.findAll();
@@ -60,6 +60,22 @@ export const postRoom =async(req,res)=>{
         console.log(err);
     }
 }
+
+export const getRoomById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await Room.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 
     
 

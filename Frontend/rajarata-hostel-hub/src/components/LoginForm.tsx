@@ -34,6 +34,7 @@ export function LoginForm() {
       alert("Student logged in successfully!");
       // Save token or user info if returned
       localStorage.setItem("userToken", res.data.token);
+      localStorage.setItem("userId", res.data.id);
       navigate("/student-dashboard"); // redirect to student dashboard
     } catch (err: any) {
       console.error(err);
@@ -49,6 +50,7 @@ export function LoginForm() {
       alert("Admin logged in successfully!");
       // Save token or user info if returned
       localStorage.setItem("adminToken", res.data.token);
+      localStorage.setItem("adminId", res.data.admin.id);
       navigate("/admin-dashboard"); // redirect to admin dashboard
     } catch (err: any) {
       console.error(err);

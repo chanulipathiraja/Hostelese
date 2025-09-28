@@ -7,6 +7,14 @@ const Complains = sequelize.define('Complains', {
     primaryKey: true,
     autoIncrement: true,
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
   complainDate: {
     type: DataTypes.DATE,
     allowNull: false,

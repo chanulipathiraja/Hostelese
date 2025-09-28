@@ -4,6 +4,7 @@ import {
   postFacility,
   deleteFacility,
   updateFacility,
+  getFacilityById
   
 
 } from '../controllers/facilityController.js';
@@ -13,9 +14,10 @@ import {
 const router = express.Router();
 
 router.get('/', getFacility);
-router.delete('/register', deleteFacility);
-router.post('/:id', updateFacility);
-router.post('/login', postFacility);
+router.post('/register', postFacility);
+router.delete('/delete', deleteFacility);
+router.post('/refresh', updateFacility);
+router.get('/:id', getFacilityById);
 
 /*router.get('/users', authenticateToken, getstudentName);
 router.get('/users/:id', authenticateToken, getAdminById);

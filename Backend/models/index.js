@@ -1,43 +1,41 @@
-// 'use strict';
+import Hostel from './hostel.js';
+import Admin from './admin.js';
+import User from './user.js';
+import Complains from './complains.js';
+import Emergency from './emergency.js';
+import Facility from './facility.js';
+import Payment from './payment.js';
+import Room from './room.js';
 
-// const fs = require('fs');
-// const path = require('path');
-// const Sequelize = require('sequelize');
-// const process = require('process');
-// const basename = path.basename(__filename);
-// const env = process.env.NODE_ENV || 'development';
-// const config = require(__dirname + '/../config/config.json')[env];
-// const db = {};
+// User belongs to Hostel
+User.belongsTo(Hostel, { foreignKey: 'hostelId' });
+Hostel.hasMany(User, { foreignKey: 'hostelId' });
 
-// let sequelize;
-// if (config.use_env_variable) {
-//   sequelize = new Sequelize(process.env[config.use_env_variable], config);
-// } else {
-//   sequelize = new Sequelize(config.database, config.username, config.password, config);
-// }
+// User belongs to Emergency
+User.belongsTo(Emergency, { foreignKey: 'emergencyId' });
+Emergency.hasMany(User, { foreignKey: 'emergencyId' });
 
-// fs
-//   .readdirSync(__dirname)
-//   .filter(file => {
-//     return (
-//       file.indexOf('.') !== 0 &&
-//       file !== basename &&
-//       file.slice(-3) === '.js' &&
-//       file.indexOf('.test.js') === -1
-//     );
-//   })
-//   .forEach(file => {
-//     const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-//     db[model.name] = model;
-//   });
+// User has many Complains
+Complains.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Complains, { foreignKey: 'userId' });
 
-// Object.keys(db).forEach(modelName => {
-//   if (db[modelName].associate) {
-//     db[modelName].associate(db);
-//   }
-// });
+// User has payments
+User.hasMany(Payment, { foreignKey: 'userId' });
+Payment.belongsTo(User, { foreignKey: 'userId' });
 
-// db.sequelize = sequelize;
-// db.Sequelize = Sequelize;
+// Hostel relations remain correct
+Hostel.hasMany(Room, { foreignKey: 'hostelId' });
+Hostel.hasMany(Facility, { foreignKey: 'hostelId' });
 
-// module.exports = db;
+
+export  {
+  Admin,
+  Complains,
+  Emergency,
+  Facility,
+  Hostel,
+  Payment,
+  Room,
+  User,
+};
+

@@ -3,14 +3,15 @@ import {
   getRoom,
   postRoom,
   deleteRoom,
-  updateRoom
+  updateRoom,
+  getRoomById
 
 } from '../controllers/roomController.js';
 //import { authenticateToken } from '../middleware/authMiddleware.js';
 
 
 const router = express.Router();
-
+router.get('/:id', getRoomById);
 router.get('/', getRoom);
 router.post('/register', postRoom);
 router.delete('/refresh', deleteRoom);

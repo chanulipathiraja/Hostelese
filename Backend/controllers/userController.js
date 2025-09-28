@@ -1,31 +1,41 @@
 import express from 'express';
 import { DataTypes } from 'sequelize';
 
-import User from '../models/user.js';
+import {User, Hostel, Emergency} from '../models/index.js';
 
 export const getUser = async(req,res)=>{
    const user = await User.findAll();
    res.json(user);
 }
 
-export const deleteUser = async(req,res)=>{   
-     const id = req.params.id;
-    const deleteuser = await User.destroy({
-    where: {
-        id: id
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params; // or req.body depending on your route
+    if (!id) {
+      return res.status(400).json({ error: "User ID is required" });
     }
-   })
-   res.json(deleteuser);
-   
-}
+
+    const deleted = await User.destroy({ where: { id } });
+
+    if (!deleted) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 export const updateUser = async(req,res)=>{
-    const id = req.params.id;
+    const id = req.body.id;
 
    const updateuser = await User.update({
     studentName: req.body.studentName,
     userName: req.body.userName,
-    hostelName: req.body.hostelName,
+    hostelId: req.body.hostelId,
+    emergencyId: req.body.emergencyId,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
     email: req.body.email,
@@ -57,7 +67,8 @@ export const postUser =async(req,res)=>{
     const newuser = await User.create({
      studentName: req.body.studentName,
      userName: req.body.userName,
-     hostelName: req.body.hostelName,
+     hostelId: req.body.hostelId,
+     emergencyId: req.body.emergencyId,
      password: req.body.password,
      confirmPassword: req.body.confirmPassword,
      email: req.body.email,
@@ -101,7 +112,12 @@ export const loginUser = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id,{
+      include: [
+        { model: Hostel },      
+        { model: Emergency }    // fetch emergency data too if needed
+      ]
+    });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -111,3 +127,20 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedUser = await User.destroy({
+      where: { id }
+    });
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User removed successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

@@ -10,6 +10,10 @@ const Payment = sequelize.define('Payment', {
   userID: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   },
   paymentreference: {
     type: DataTypes. STRING,

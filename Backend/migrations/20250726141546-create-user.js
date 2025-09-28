@@ -9,15 +9,29 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      hostelId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'hostels',
+          key: 'id'
+        }
+      },
+      emergencyId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'emergencies',
+          key: 'id'
+        }
+      },
       studentName: {
         type: Sequelize.STRING
       },
       userName: {
         type: Sequelize.STRING
       },
-      hostelName: {
-        type: Sequelize.STRING
-      },
+      
       password: {
         type: Sequelize.STRING
       },

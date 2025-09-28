@@ -7,29 +7,34 @@ const Room = sequelize.define('Room', {
     primaryKey: true,
     autoIncrement: true,
   },
+
   
-  hostelid: {
-    type: DataTypes.STRING,
+  hostelId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'hostels',
+      key: 'id'
+    }
   },
 
   roomNo: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 
   floorNo: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 
   numberofStudents: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 
   numberofBeds: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   

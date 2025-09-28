@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
+import Hostel from './hostel.js';
 
 const Emergency = sequelize.define('Emergency', {
   id: {

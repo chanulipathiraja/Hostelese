@@ -1,6 +1,7 @@
 import express from 'express';
 
-import Admin from '../models/admin.js';
+
+import {Admin,Hostel,Payment,Complains} from '../models/index.js';
 
 export const getAdmin = async(req,res)=>{
    const admin = await Admin.findAll();
@@ -95,3 +96,36 @@ export const loginAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getAdminById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await Admin.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getAdminDashboardData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await Admin.findByPk(id);
+    const hostels = await Hostel.findAll();
+    const payments = await Payment.findAll();
+    const complains = await Complains.findAll();
+    if (!user) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    res.json({ user, hostels, payments, complains });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+

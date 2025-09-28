@@ -3,7 +3,8 @@ import {
   getPayment,
   postPayment,
   deletePayment,
-  updatePayment
+  updatePayment,
+  getPaymentById
 
 } from '../controllers/paymentController.js';
 //import { authenticateToken } from '../middleware/authMiddleware.js';
@@ -12,6 +13,7 @@ import {
 const router = express.Router();
 
 router.get('/ ', getPayment);
+router.get('/:id', getPaymentById);
 router.post('/add', postPayment);
 router.delete('/refresh', deletePayment);
 router.post('/refresh', updatePayment);

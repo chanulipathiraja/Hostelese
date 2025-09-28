@@ -1,6 +1,6 @@
 import express from 'express';
 
-import Emergency from '../models/emergency.js';
+import {Emergency} from '../models/index.js';
 
 export const getEmergency = async(req,res)=>{
    const emergency = await Emergency.findAll();

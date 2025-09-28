@@ -4,7 +4,9 @@ import {
   postAdmin,
   deleteAdmin,
   updateAdmin,
-  loginAdmin
+  loginAdmin,
+  getAdminById,
+  getAdminDashboardData
 
 } from '../controllers/adminController.js';
 //import { authenticateToken } from '../middleware/authMiddleware.js';
@@ -13,9 +15,11 @@ import {
 const router = express.Router();
 
 router.get('/', getAdmin);
+router.get('/:id', getAdminById);
+router.get('/dashboard/:id', getAdminDashboardData);
 router.post('/register', postAdmin);
 router.delete('/:id', deleteAdmin);
-router.post('/:id', updateAdmin);
+router.post('/refresh', updateAdmin);
 router.post('/login', loginAdmin);
 
 /*router.get('/users', authenticateToken, getstudentName);

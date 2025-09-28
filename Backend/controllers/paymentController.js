@@ -1,6 +1,6 @@
 import express from 'express';
 
-import Payment from '../models/payment.js';
+import {Payment} from '../models/index.js';
 
 export const getPayment = async(req,res)=>{
    const payment = await Payment.findAll();
@@ -55,6 +55,20 @@ export const postPayment =async(req,res)=>{
     console.log(newpayment);
     res.json(newpayment);
 }
+
+export const getPaymentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await Payment.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
     
 

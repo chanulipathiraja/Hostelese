@@ -33,7 +33,7 @@ interface Student {
   id: number;
   studentName: string;
   email: string;
-  hostelName: string;
+  indexNumber: string;
   roomNumber: string;
 }
 
@@ -60,14 +60,6 @@ interface Admin {
   hostelName: string;
   email: string;
 }
-const mockHostelStats = {
-  totalStudents: 240,
-  onLeave: 15,
-  sickStudents: 3,
-  totalHostels: 20,
-  pendingComplaints: 8,
-  pendingPayments: 12,
-};
 
 
 // --------------------- Components ---------------------
@@ -93,15 +85,18 @@ function HostelDetails() {
     fetchHostels();
   }, []);
 
-  const handleRemove = async (id: number) => {
-    try {
-      await axios.delete('http://localhost:3001/api/hostels/${id}');
-      setHostels((prev) => prev.filter((h) => h.id !== id));
-    } catch (err) {
-      console.error("Failed to remove Hostel", err);
-      alert("Error removing Hostel. Please try again.");
-    }
-  };
+ const handleRemove = async (id: number) => {
+  try {
+    await axios.delete(`http://localhost:3001/api/hostels/${id}`);
+
+    setHostels((prev) => prev.filter((h) => h.id !== id));
+    alert("Hostel removed successfully!");
+  } catch (err) {
+    console.error("Failed to remove Hostel", err);
+    alert("Error removing Hostel. Please try again.");
+  }
+};
+
 
   if (loading)
     return (
@@ -138,10 +133,10 @@ function HostelDetails() {
               <strong>Register Count:</strong> {hostel.register_count}
             </p>
             <p>
-              <strong>Leave Count:</strong> {hostel.leave_count}
+              <strong>Study Area:</strong> {hostel.leave_count}
             </p>
             <p>
-              <strong>Sick Count:</strong> {hostel.sick_count}
+              <strong>Sick Rooms:</strong> {hostel.sick_count}
             </p>
             <p>
               <strong>Room Count:</strong> {hostel.room_count}
@@ -159,6 +154,7 @@ function StudentDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -174,15 +170,20 @@ function StudentDetails() {
     fetchStudents();
   }, []);
 
+ 
+
   const handleRemove = async (id: number) => {
-    try {
-      await axios.delete('http://localhost:3001/api/user/${id}');
-      setStudents((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) {
-      console.error("Failed to remove student", err);
-      alert("Error removing student. Please try again.");
-    }
-  };
+  try {
+    await axios.delete(`http://localhost:3001/api/user/${id}`);
+
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+    alert("Student removed successfully!");
+  } catch (err) {
+    console.error("Failed to remove student", err);
+    alert("Error removing student. Please try again.");
+  }
+};
+
 
   if (loading)
     return (
@@ -221,7 +222,7 @@ function StudentDetails() {
               <strong>Email:</strong> {student.email}
             </p>
             <p>
-              <strong>Hostel:</strong> {student.hostelName}
+              <strong>Index Number:</strong> {student.indexNumber}
             </p>
             <p>
               <strong>Room:</strong> {student.roomNumber}
@@ -229,16 +230,16 @@ function StudentDetails() {
           </CardContent>
         </Card>
       ))}
-    </div>
-  );
+ </div>
+ );
 }
-
 // Complaints Component
 function ComplainDetails() {
   const [complain, setComplain] = useState<Complain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch complaints
   useEffect(() => {
     const fetchComplain = async () => {
       try {
@@ -253,32 +254,50 @@ function ComplainDetails() {
     };
 
     fetchComplain();
+
+    // Optional auto-refresh every 5 seconds
     const interval = setInterval(fetchComplain, 5000);
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ DELETE handler
   const handleRemove = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this complaint?")) return;
+
     try {
-      await axios.delete('http://localhost:3001/api/complains/${id}');
+      await axios.delete(`http://localhost:3001/api/complains/${id}`);
+
+
+      // Remove complaint from UI immediately
       setComplain((prev) => prev.filter((c) => c.id !== id));
-    } catch (err) {
+
+      alert("Complaint deleted successfully!");
+    } catch (err: any) {
       console.error("Failed to remove complaint", err);
-      alert("Error removing complaint. Please try again.");
+      alert(
+        err.response?.data?.message ||
+          "Error removing complaint. Please try again."
+      );
     }
   };
 
+  // Loading UI
   if (loading)
     return (
       <Card className="text-center text-muted-foreground">
         <CardContent>Loading complaints...</CardContent>
       </Card>
     );
+
+  // Error UI
   if (error)
     return (
       <Card className="w-full max-w-2xl mx-auto mt-6">
         <CardContent className="text-destructive">{error}</CardContent>
       </Card>
     );
+
+  // Empty state
   if (!complain.length)
     return (
       <Card className="text-center text-muted-foreground">
@@ -286,6 +305,7 @@ function ComplainDetails() {
       </Card>
     );
 
+  // ✅ Render list
   return (
     <div className="space-y-4">
       {complain.map((c) => (
@@ -320,6 +340,8 @@ function ComplainDetails() {
   );
 }
 
+
+
 // Payments Component
 function PaymentDetails() {
   const [paymentDetails, setPaymentDetails] = useState<Payment | null>(null);
@@ -329,7 +351,7 @@ function PaymentDetails() {
   const fetchPayment = async () => {
     setLoadingPayment(true);
     try {
-      const response = await axios.get("http://localhost:3001/api/payment/1");
+      const response = await axios.get('http://localhost:3001/api/payment/15');
       setPaymentDetails(response.data);
     } catch (err: any) {
       setErrorPayment(err.response?.data?.message || "Error fetching payment data");
@@ -362,26 +384,36 @@ function PaymentDetails() {
       )}
     </div>
   );
+ 
 }
 
-
 // --------------------- Main Admin Dashboard ---------------------
-export function AdminDashboard() {
+
+  export function AdminDashboard() {
   const navigate = useNavigate();
   const [adminData, setAdminData] = useState<Admin | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(true);
   const [errorAdmin, setErrorAdmin] = useState("");
 
   const onLogout = () => {
+    localStorage.removeItem("adminId");
     localStorage.removeItem("adminToken");
-    navigate("/login");
+    sessionStorage.clear();
+    navigate("/login", { replace: true });
   };
 
-  // Fetch admin info
+  // ✅ Fetch logged-in admin details
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/admins/1");
+        const adminId = localStorage.getItem("adminId");
+        if (!adminId) {
+          setErrorAdmin("Admin not logged in");
+          navigate("/login");
+          return;
+        }
+
+        const res = await axios.get('http://localhost:3001/api/admins/${adminId}');
         setAdminData(res.data);
       } catch (err) {
         console.error(err);
@@ -392,7 +424,7 @@ export function AdminDashboard() {
     };
 
     fetchAdmin();
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -433,43 +465,16 @@ export function AdminDashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8 space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-primary">Admin Dashboard</h2>
-          <p className="text-muted-foreground">Manage hostels, students, and operations</p>
+        <div className="text-center space-y-2 relative w-full h-60 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+          <img
+            src="/dashboard2.jpg"
+            alt="Rajarata University Logo"
+            className="w-full h-64 object-cover dark:brightness-75 brightness-90"
+          />
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">Admin Dashboard</h2>
+          <p className="text-lg md:text-xl text-gray-400">Manage hostels, students, and operations</p>
         </div>
-       {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto mb-3"><UsersIcon className="h-6 w-6 text-primary" /></div>
-              <p className="text-2xl font-bold">{mockHostelStats.totalStudents}</p>
-              <p className="text-sm text-muted-foreground">Total Students</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="p-3 bg-warning/10 rounded-full w-fit mx-auto mb-3"><AlertTriangleIcon className="h-6 w-6 text-warning" /></div>
-              <p className="text-2xl font-bold">{mockHostelStats.pendingComplaints}</p>
-              <p className="text-sm text-muted-foreground">Pending Complaints</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="p-3 bg-success/10 rounded-full w-fit mx-auto mb-3"><CreditCardIcon className="h-6 w-6 text-success" /></div>
-              <p className="text-2xl font-bold">{mockHostelStats.pendingPayments}</p>
-              <p className="text-sm text-muted-foreground">Pending Payments</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="p-3 bg-secondary/10 rounded-full w-fit mx-auto mb-3"><HomeIcon className="h-6 w-6 text-secondary" /></div>
-              <p className="text-2xl font-bold">{mockHostelStats.totalHostels}</p>
-              <p className="text-sm text-muted-foreground">Total Hostels</p>
-            </CardContent>
-          </Card>
-        </div>
-
-
+    
 
         {/* Main Tabs */}
         <Card>
@@ -518,30 +523,22 @@ export function AdminDashboard() {
                 </Tabs>
               </TabsContent>
 
-              {/* Facilities Tab */}
-              <TabsContent value="facilities" className="p-0">
+
+              <TabsContent value="facilities" className="p-0">        
                 <Tabs defaultValue="list" className="w-full">
                   <div className="border-b">
                     <TabsList className="grid w-full grid-cols-2 h-auto rounded-none bg-transparent">
-                      <TabsTrigger value="list" className="py-3">
-                        View Facilities
-                      </TabsTrigger>
                       <TabsTrigger value="add" className="py-3">
                         Add Facility
                       </TabsTrigger>
                     </TabsList>
                   </div>
-                  <TabsContent value="list" className="p-6 space-y-4">
-                    <div className="text-center py-8 text-muted-foreground">
-                      <SettingsIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Facility list will be displayed here</p>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="add" className="p-6">
-                    <FacilityForm />
-                  </TabsContent>
-                </Tabs>
-              </TabsContent>
+                <TabsContent value="add" className="p-6">
+                  <FacilityForm />
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+
 
               {/* Students Tab */}
               <TabsContent value="students" className="p-6 space-y-4">

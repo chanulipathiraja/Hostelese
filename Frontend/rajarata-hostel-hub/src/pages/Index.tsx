@@ -54,7 +54,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-primary/80"></div>
         <div className="relative z-10 flex items-center justify-center h-full text-white text-center">
           <div className="space-y-4">
-            <h1 className="text-5xl font-bold mb-4">HOSTALESE</h1>
+            <h1 className="text-5xl font-bold mb-4">HOSTELEASE</h1>
             <p className="text-xl mb-2">Rajarata University</p>
             <p className="text-lg opacity-90">Secure • Efficient • User-Friendly</p>
           </div>

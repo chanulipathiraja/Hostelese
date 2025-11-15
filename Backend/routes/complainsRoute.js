@@ -4,7 +4,8 @@ import {
   postComplains,
   deleteComplains,
   updateComplains,
-  getComplainsById,
+  getComplainsById
+
  
 
 } from '../controllers/complainsController.js';
@@ -18,6 +19,7 @@ router.get('/:id', getComplainsById);
 router.post('/register', postComplains);
 router.delete('/refresh', deleteComplains);
 router.post('/refresh', updateComplains);
+
 
 /*router.get('/users', authenticateToken, getstudentName);
 router.get('/users/:id', authenticateToken, getAdminById);

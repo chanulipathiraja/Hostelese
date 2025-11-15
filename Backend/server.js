@@ -12,6 +12,8 @@ import roomRoutes from './routes/roomRoute.js';
 import cors from 'cors';
 
 
+
+
 const app = express();
 const server = http.createServer(app);
 
@@ -38,8 +40,19 @@ app.use('/api/complains', complainsRoutes);
 app.use('/api/facilities', facilityRoutes);
 app.use('/api/room', roomRoutes);
 
+
 // ✅ Start server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+

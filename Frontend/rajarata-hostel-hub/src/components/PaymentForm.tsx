@@ -20,6 +20,11 @@ export function PaymentForm() {
     paymentDate: "",
   });
 
+  // 🔹 Auto set today's date on load
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setPayment((prev) => ({ ...prev, paymentDate: today }));
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -43,17 +48,16 @@ export function PaymentForm() {
 
       if (response) {
         alert("Payment submitted successfully!");
-        await fetchPayment(); // Refresh payment details after submit
         navigate("/student-dashboard");
       } else {
         alert(response.data.message || "Payment submission failed!");
       }
-    } catch (err: any) {
-      console.error(err);
-      alert(
-        err.response?.data?.message || "Server error while submitting payment"
-      );
-    } finally {
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("submitted payment:", error.message);
+      } else {
+        console.error("Error submitting payment:", error);
+      }
       setIsSubmitting(false);
     }
   };
@@ -77,6 +81,7 @@ export function PaymentForm() {
               required
             />
           </div>
+
           <div>
             <Label>Amount</Label>
             <Input
@@ -87,21 +92,22 @@ export function PaymentForm() {
               required
             />
           </div>
+
           <div>
-            <Label>Description</Label>
+            <Label>Description (Reference Number from Payment Receipt)</Label>
             <Textarea
               name="paymentDescription"
               value={payment.paymentDescription}
               onChange={handleChange}
             />
           </div>
+
           <div>
             <Label>Payment Date</Label>
             <Input
               type="date"
               name="paymentDate"
               value={payment.paymentDate}
-              onChange={handleChange}
               required
             />
           </div>
@@ -110,9 +116,6 @@ export function PaymentForm() {
             {isSubmitting ? "Submitting..." : "Submit Payment"}
           </Button>
         </form>
-
-        {/* Show payment details */}
-        
       </CardContent>
     </Card>
   );

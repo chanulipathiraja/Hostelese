@@ -61,7 +61,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto bg-card/95 backdrop-blur-sm border-primary/20">
       <CardHeader className="text-center space-y-4">
-        <CardTitle className="text-2xl font-bold text-primary">HOSTALESE</CardTitle>
+        <CardTitle className="text-2xl font-bold text-primary">HOSTELEASE</CardTitle>
         <CardDescription className="text-base">Rajarata University</CardDescription>
       </CardHeader>
       <CardContent>

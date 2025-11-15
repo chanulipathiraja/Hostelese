@@ -5,6 +5,7 @@ import {
   updateHostel,
   getHostelById,
   deleteHostelById
+ 
 
 
 } from '../controllers/hostelController.js';
@@ -18,6 +19,7 @@ router.get('/:id', getHostelById);
 router.delete('/:id', deleteHostelById);
 router.post('/register', postHostel);
 router.post('/refresh', updateHostel);
+
 
 /*router.get('/users', authenticateToken, getstudentName);
 router.get('/users/:id', authenticateToken, getAdminById);

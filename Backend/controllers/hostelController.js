@@ -1,5 +1,6 @@
 import express from 'express';
 
+
 import {Hostel} from '../models/index.js';
 
 export const getHostel = async(req,res)=>{
@@ -89,6 +90,9 @@ export const getHostelById = async (req, res) => {
   }
 };
     
+
+
+
 
 
 

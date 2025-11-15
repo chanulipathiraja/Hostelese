@@ -6,7 +6,7 @@ import {
   updateUser,
   loginUser,
   getUserById,
-  deleteUserById,
+  deleteUserById
   
 
 } from '../controllers/userController.js';
@@ -23,6 +23,7 @@ router.post('/register', postUser);
 router.delete('/:id', deleteUser);
 router.put('/refresh', updateUser);
 router.post('/login', loginUser);
+
 
 /*router.get('/users', authenticateToken, getstudentName);
 router.get('/users/:id', authenticateToken, getAdminById);

@@ -1,87 +1,75 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { Settings, Plus } from "lucide-react";
-
-interface FacilityFormData {
-  type: string;
-}
-
 export function FacilityForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  const { register, handleSubmit, formState: { errors } } = useForm<FacilityFormData>();
+  const [hostelId, setHostelId] = useState("");
+  const [facilityType, setFacilityType] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const onSubmit = async (data: FacilityFormData) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      const payload = { facility_type: data.type };
+      const response = await axios.post(
+        "http://localhost:3001/api/facilities/register",
+        { hostelId,facilityType }
+      );
 
-      const res = await axios.post("http://localhost:3001/api/facilities/register", payload);
-
-      if (res.status === 201 || res.status === 200) {
-        toast({
-          title: "Facility Type Added",
-          description: "The facility type has been successfully added.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to add facility type. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error('Error:', error.response?.data || error.message);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+      setSuccess("Facility added successfully!");
+      setHostelId("");
+      setFacilityType("");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.message || "Something went wrong");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          Add Facility Type
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="type">Facility Type</Label>
-            <Input
-              id="type"
-              placeholder="Enter facility type"
-              {...register("type", { required: "Facility type is required" })}
-            />
-            {errors.type && (
-              <p className="text-sm text-destructive">{errors.type.message}</p>
-            )}
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+      {error && <p className="text-red-500">{error}</p>}
+      {success && <p className="text-green-500">{success}</p>}
 
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isSubmitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {isSubmitting ? "Adding..." : "Add Type"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <div>
+        <label className="block font-medium mb-1">Hostel ID</label>
+        <input
+          type="text"
+          value={hostelId}
+          onChange={(e) => setHostelId(e.target.value)}
+          required
+          className="w-full border rounded px-3 py-2"
+          placeholder="Enter hostel ID"
+        />
+      </div>
+
+      <div>
+        <label className="block font-medium mb-1">Facility Type</label>
+        <input
+          type="text"
+          value={facilityType}
+          onChange={(e) => setFacilityType(e.target.value)}
+          required
+          className="w-full border rounded px-3 py-2"
+          placeholder="Enter facility type"
+        />
+      </div>
+
+    
+
+      <Button
+        type="submit"
+        disabled={loading}
+        className="bg-primary text-white w-full"
+      >
+        {loading ? "Adding..." : "Add Facility"}
+      </Button>
+    </form>
   );
 }

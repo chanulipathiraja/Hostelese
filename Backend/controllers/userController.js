@@ -1,6 +1,9 @@
 import express from 'express';
 import { DataTypes } from 'sequelize';
 
+
+
+
 import {User, Hostel, Emergency} from '../models/index.js';
 
 export const getUser = async(req,res)=>{
@@ -143,4 +146,9 @@ export const deleteUserById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+
 

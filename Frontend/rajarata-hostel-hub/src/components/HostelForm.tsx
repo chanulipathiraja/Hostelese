@@ -95,14 +95,14 @@ export function HostelForm() {
 
           {/* Capacity */}
           <div className="space-y-2">
-            <Label htmlFor="capacity">Leave Count</Label>
-            <Input id="capacity" type="number" {...register("leave_count", { required: "leave_count is required", min: { value: 1, message: "leave_count must be at least 1" }})} placeholder="Enter leave_count"/>
+            <Label htmlFor="capacity">Study Area</Label>
+            <Input id="capacity" type="number" {...register("leave_count", { required: "leave_count is required", min: { value: 1, message: "leave_count must be at least 1" }})} placeholder="Enter Study Area"/>
             {errors.leave_count && <p className="text-sm text-destructive">{errors.leave_count.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="capacity">Sick Count</Label>
-            <Input id="capacity" type="number" {...register("sick_count", { required: "sick_count is required", min: { value: 1, message: "sick_count must be at least 1" }})} placeholder="Enter sick_count"/>
+            <Label htmlFor="capacity">Sick Rooms</Label>
+            <Input id="capacity" type="number" {...register("sick_count", { required: "sick_count is required", min: { value: 1, message: "sick_count must be at least 1" }})} placeholder="Enter Sick Rooms"/>
             {errors.sick_count && <p className="text-sm text-destructive">{errors.sick_count.message}</p>}
           </div>
 

@@ -5,6 +5,8 @@ import {
   deletePayment,
   updatePayment,
   getPaymentById
+ 
+
 
 } from '../controllers/paymentController.js';
 //import { authenticateToken } from '../middleware/authMiddleware.js';
@@ -17,6 +19,7 @@ router.get('/:id', getPaymentById);
 router.post('/add', postPayment);
 router.delete('/refresh', deletePayment);
 router.post('/refresh', updatePayment);
+
 
 /*router.get('/users', authenticateToken, getstudentName);
 router.get('/users/:id', authenticateToken, getAdminById);

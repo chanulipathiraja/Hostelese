@@ -17,15 +17,6 @@ interface StudentDashboardProps {
   onLogout?: () => void;
 }
 
-const mockHostelData = {
-  name: "Pandula Hostel",
-  facilityType: "Attached Bathroom",
-  totalRooms: 120,
-  registeredStudents: 240,
-  onLeave: 15,
-  sickStudents: 3,
-};
-
 export function StudentDashboard({ onLogout }: StudentDashboardProps) {
   const [studentData, setStudentData] = useState<any>(null);
   const [loadingStudent, setLoadingStudent] = useState(true);
@@ -38,6 +29,12 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
   const [loadingComplaint, setLoadingComplaint] = useState(false);
   const [complaintSuccess, setComplaintSuccess] = useState(false);
   const [complaintError, setComplaintError] = useState("");
+
+  // 🔹 Auto-set today's date for Complaints
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setComplaintDate(today);
+  }, []);
 
   // Edit states
   const [isEditing, setIsEditing] = useState(false);
@@ -62,7 +59,7 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
       .then((response) => {
         console.log(response.data);
         setStudentData(response.data);
-        setEditData(response.data); // set edit data initially
+        setEditData(response.data);
         setLoadingStudent(false);
       })
       .catch((err) => {
@@ -72,15 +69,32 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
       });
   }, []);
 
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+
+    axios
+      .get(`http://localhost:3001/api/user/${userId}`)
+      .then(async (res) => {
+        setStudentData(res.data);
+
+        // Update last login
+        await axios.put(`http://localhost:3001/api/user/${userId}`, {
+          lastLogin: new Date(),
+        });
+      })
+      .catch((err) => console.error("Failed to fetch student data", err));
+  }, []);
+
   // Submit complaint
   const handleComplaintSubmit = async () => {
+    if (!studentData) return;
     setLoadingComplaint(true);
     setComplaintSuccess(false);
     setComplaintError("");
 
     try {
       await axios.post("http://localhost:3001/api/complains/register", {
-        userID: studentData.id,
+        userId: studentData.id,
         complainAbout: complaintText,
         complainType: complaintType,
         complainDate: complaintDate,
@@ -89,7 +103,11 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
       setComplaintSuccess(true);
       setComplaintText("");
       setComplaintType("");
-      setComplaintDate("");
+
+      // Reset complaint date to today
+      const today = new Date().toISOString().split("T")[0];
+      setComplaintDate(today);
+
     } catch (err: any) {
       setComplaintError(err.response?.data?.message || "Failed to submit complaint");
     } finally {
@@ -103,7 +121,7 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
     setUpdateMessage("");
     try {
       const response = await axios.put("http://localhost:3001/api/user/refresh", editData);
-      setStudentData(response.data); // refresh with new data
+      setStudentData(response.data);
       setIsEditing(false);
       setUpdateMessage("Information updated successfully!");
     } catch (err: any) {
@@ -159,11 +177,16 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
 
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Welcome Section */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 relative w-full h-60 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+          <img
+            src="/dashboard1.png"
+            alt="Rajarata University Logo"
+            className="w-full h-64 object-cover"
+          />
           <h2 className="text-3xl font-bold text-primary">
             Welcome back, {studentData.studentName}!
           </h2>
-          <p className="text-muted-foreground">
+          <p className="ttext-lg md:text-xl text-gray-400">
             Manage your hostel information and payments
           </p>
         </div>
@@ -175,12 +198,8 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
               <UserIcon className="h-5 w-5" />
               Personal Information
             </CardTitle>
-            {!isEditing && (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                Edit
-              </Button>
-            )}
           </CardHeader>
+
           <CardContent className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <Label>Student Name</Label>
@@ -217,6 +236,7 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                 <p className="font-medium">{studentData.email}</p>
               )}
             </div>
+
             <div className="space-y-4">
               <Label>Phone Number</Label>
               {isEditing ? (
@@ -260,7 +280,9 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                   }
                 />
               ) : (
-                <p className="font-medium">{studentData.parentPhonenumber}</p>
+                <p className="font-medium">
+                  {studentData.parentPhonenumber}
+                </p>
               )}
 
               <Label>Address</Label>
@@ -278,11 +300,25 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
               )}
             </div>
           </CardContent>
+
+          {!isEditing && (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                style={{ backgroundColor: "#a6aad7ff" }}
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </Button>
+            </div>
+          )}
+
           {isEditing && (
             <div className="flex gap-3 p-4">
               <Button onClick={handleUpdateSubmit} disabled={loadingUpdate}>
                 {loadingUpdate ? "Saving..." : "Save"}
               </Button>
+
               <Button
                 variant="outline"
                 onClick={() => {
@@ -294,6 +330,7 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
               </Button>
             </div>
           )}
+
           {updateMessage && (
             <p className="text-center text-sm text-green-600 p-2">
               {updateMessage}
@@ -315,8 +352,11 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                 <h3 className="font-semibold text-primary text-lg">
                   Hostel
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1">{studentData.Hostel.hostelName}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {studentData.Hostel.hostelName}
+                </p>
               </div>
+
               <div className="text-center p-4 bg-secondary/10 rounded-lg">
                 <h3 className="font-semibold text-lg">
                   Room Number {studentData.roomNumber}
@@ -325,8 +365,53 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                   Floor Number {studentData.floorNumber}
                 </p>
               </div>
-              
-              
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Facilities Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HomeIcon className="h-5 w-5" />
+              Hostel Facilities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { name: "Fans", status: "Available", image: "/Fans.jpg" },
+                { name: "Wi-Fi", status: "Available", image: "/Wifi.jpg" },
+                { name: "Bathrooms", status: "Available", image: "/Bathrooms.jpg" },
+                { name: "Canteen", status: "Available", image: "/Canteen.jpg" },
+                { name: "Sick Room", status: "Available", image: "/Sick Room.jpg" },
+                { name: "Study Area", status: "Available", image: "Study Area.jpg" },
+              ].map((facility, index) => (
+                <div
+                  key={index}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border shadow-sm transition hover:shadow-md ${
+                    facility.status === "Available"
+                      ? "bg-green-50 border-green-300"
+                      : "bg-red-50 border-red-300"
+                  }`}
+                >
+                  <img
+                    src={facility.image}
+                    alt={facility.name}
+                    className="w-16 h-16 object-cover rounded-md mb-2"
+                  />
+                  <h3 className="font-semibold text-lg">{facility.name}</h3>
+                  <p
+                    className={`text-sm mt-1 ${
+                      facility.status === "Available"
+                        ? "text-green-700"
+                        : "text-red-700"
+                    }`}
+                  >
+                    {facility.status}
+                  </p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -347,14 +432,11 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
         {/* Complaint Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Make Complaint
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2">Make Complaint</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
             <h3 className="text-lg font-semibold mb-2">Submit a Complaint</h3>
 
-            {/* Complaint Type */}
             <div className="space-y-1">
               <label className="text-sm font-medium text-muted-foreground">
                 Complaint Type
@@ -370,7 +452,6 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
               </select>
             </div>
 
-            {/* Complaint Date */}
             <div className="space-y-1">
               <label className="text-sm font-medium text-muted-foreground">
                 Complaint Date
@@ -379,11 +460,10 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                 type="date"
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-primary/30"
                 value={complaintDate}
-                onChange={(e) => setComplaintDate(e.target.value)}
+                
               />
             </div>
 
-            {/* Complaint Text */}
             <textarea
               className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-primary/30"
               rows={4}
@@ -392,7 +472,6 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
               onChange={(e) => setComplaintText(e.target.value)}
             />
 
-            {/* Submit */}
             <Button
               onClick={handleComplaintSubmit}
               disabled={
@@ -405,14 +484,16 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
               {loadingComplaint ? "Submitting..." : "Submit Complaint"}
             </Button>
 
-            {/* Feedback */}
             {complaintSuccess && (
               <p className="text-green-600 text-sm mt-2">
                 Complaint submitted successfully!
               </p>
             )}
+
             {complaintError && (
-              <p className="text-red-600 text-sm mt-2">{complaintError}</p>
+              <p className="text-red-600 text-sm mt-2">
+                {complaintError}
+              </p>
             )}
           </CardContent>
         </Card>
@@ -431,10 +512,15 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                 className="text-center p-4 border rounded-lg"
                 style={{ backgroundColor: "#fcdad6ff" }}
               >
-                <h3 className="font-semibold">Sub Warden  </h3>
-                <p className="text-sm text-muted-foreground">{studentData.Emergency.subwardenName}</p>
-                <p className="font-medium mt-2">{studentData.Emergency.subwardenContactnumber}</p>
+                <h3 className="font-semibold">Sub Warden</h3>
+                <p className="text-sm text-muted-foreground">
+                  {studentData.Emergency.subwardenName}
+                </p>
+                <p className="font-medium mt-2">
+                  {studentData.Emergency.subwardenContactnumber}
+                </p>
               </div>
+
               <div
                 className="text-center p-4 border rounded-lg"
                 style={{ backgroundColor: "#fcdad6ff" }}
@@ -443,15 +529,22 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
                 <p className="text-sm text-muted-foreground">
                   {studentData.Emergency.medicalcenterName}
                 </p>
-                <p className="font-medium mt-2">{studentData.Emergency.subwardenContactnumber}</p>
+                <p className="font-medium mt-2">
+                  {studentData.Emergency.subwardenContactnumber}
+                </p>
               </div>
+
               <div
                 className="text-center p-4 border rounded-lg"
                 style={{ backgroundColor: "#fcdad6ff" }}
               >
                 <h3 className="font-semibold">Ambulance</h3>
-                <p className="text-sm text-muted-foreground">{studentData.Emergency.ambulanceName}</p>
-                <p className="font-medium mt-2">{studentData.Emergency.ambulanceContactnumber}</p>
+                <p className="text-sm text-muted-foreground">
+                  {studentData.Emergency.ambulanceName}
+                </p>
+                <p className="font-medium mt-2">
+                  {studentData.Emergency.ambulanceContactnumber}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -462,5 +555,9 @@ export function StudentDashboard({ onLogout }: StudentDashboardProps) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm font-medium text-muted-foreground">{children}</p>;
+  return (
+    <p className="text-sm font-medium text-muted-foreground">
+      {children}
+    </p>
+  );
 }

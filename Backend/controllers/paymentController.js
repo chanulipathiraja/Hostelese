@@ -1,5 +1,6 @@
 import express from 'express';
 
+
 import {Payment} from '../models/index.js';
 
 export const getPayment = async(req,res)=>{
@@ -69,6 +70,10 @@ export const getPaymentById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
 
     
 
